@@ -32,22 +32,25 @@ Example of input.jsonl:
 
 def eval_model(args):
     # Load input JSONL file with questions and model responses
-    with open(os.path.expanduser(args.response_file), "r") as f:
+    with open(os.path.expanduser(args.response_file), "r", encoding="utf-8") as f:
         questions = [json.loads(line) for line in f]
 
     answers_file = os.path.expanduser(args.answers_file)
     os.makedirs(os.path.dirname(answers_file), exist_ok=True)
 
+    if args.overwrite and os.path.exists(answers_file):
+        os.remove(answers_file)
+
     answered_questions = set()
     # Check if answer file exists and collect already processed question IDs
     if os.path.exists(answers_file):
-        with open(answers_file, "r") as file:
+        with open(answers_file, "r", encoding="utf-8") as file:
             for line in file:
                 data = json.loads(line)
                 answered_questions.add(data["question_id"])
 
     # Open answer file for appending new results
-    with open(answers_file, "a") as ans_file:
+    with open(answers_file, "a", encoding="utf-8") as ans_file:
         for line in tqdm(questions):
             idx = line["question_id"]
             # Skip if already answered
@@ -55,9 +58,13 @@ def eval_model(args):
                 continue
 
             # Extract fields from input JSONL
-            cur_prompt = line["text"]  # The text field
-            outputs = line["response"].strip()  # The model response
-            model_name = line["model_name"]  # Model name from input
+            cur_prompt = line.get("text", "")  # The question text
+            response = line.get("response", line.get("Response"))  # The model response
+            if response is None:
+                raise KeyError(f"question_id={idx}: no 'response' key in {args.response_file}. "
+                               f"Found keys: {sorted(line)}")
+            outputs = str(response).strip()
+            model_name = line.get("model_name", "model_name")  # Model name from input
 
             # Generate a unique answer ID
             ans_id = shortuuid.uuid()
@@ -80,6 +87,8 @@ if __name__ == "__main__":
     parser.add_argument("--response-file", type=str, default="./model_responses/responses_Telugu.jsonl")
     parser.add_argument("--answers-file", type=str, default="./answers/answers.jsonl")
     
+    parser.add_argument("--overwrite", action="store_true", help="Delete an existing answers file instead of appending to it")
+
     args = parser.parse_args()
 
     eval_model(args)

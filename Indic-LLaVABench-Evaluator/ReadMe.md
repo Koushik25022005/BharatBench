@@ -54,3 +54,8 @@ The output scores will be available in the following folder:
 Indic-LLaVABench-Evaluator is built with reference to the code of the following projects: [LLaVA-1.5](https://github.com/haotian-liu/LLaVA/tree/main/llava/eval) and Dataset from: https://huggingface.co/datasets/MBZUAI/multilingual-llava-bench-in-the-wild/tree/main/images . Thanks for their awesome work!
 
 
+
+## Judge model
+`scripts/eval_gpt_review_bench.py` uses the `openai>=1.0` client and reads `OPENAI_API_KEY`. The judge defaults to `gpt-4-0613` (the original LLaVA-Bench setting). Override it with `--judge-model <name>` or the `JUDGE_MODEL` env var. Scores from different judges are not directly comparable. The response file must contain **one answer per question, in the order of `inputs/<language>/questions.jsonl`**: answers are paired with questions line by line, and the script refuses mismatched counts.
+
+An end-to-end example (QLoRA fine-tuning of Qwen2-VL on Chitrakshara, then base-vs-fine-tuned scoring on Indic-LLaVA-Bench and Indic-POPE) is in [`../notebooks/Chitrakshara_Qwen2VL_QLoRA_BharatBench.ipynb`](../notebooks/Chitrakshara_Qwen2VL_QLoRA_BharatBench.ipynb).

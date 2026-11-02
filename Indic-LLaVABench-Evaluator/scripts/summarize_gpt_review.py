@@ -38,7 +38,7 @@ if __name__ == '__main__':
         review_files = [x for x in os.listdir(args.dir) if x.endswith('.jsonl') and (x.startswith('gpt4_text') or x.startswith('reviews_') or x.startswith('review_') or 'review' in args.dir)]
 
     # Open output file for appending results
-    with open(args.output, 'a') as output_file:
+    with open(args.output, 'a', encoding='utf-8') as output_file:
         for review_file in sorted(review_files):
             config = os.path.basename(review_file).replace('gpt4_text_', '').replace('.jsonl', '')
             if args.select is not None and any(x not in config for x in args.select):
@@ -53,7 +53,7 @@ if __name__ == '__main__':
             scores = defaultdict(list)
             output_file.write(f"Processing: {config}\n")  # Write config name to output file
             
-            with open(os.path.join(args.dir, review_file) if args.dir is not None else review_file) as f:
+            with open(os.path.join(args.dir, review_file) if args.dir is not None else review_file, encoding='utf-8') as f:
                 for review_str in f:
                     review = json.loads(review_str)
                     if review['question_id'] in args.ignore:
